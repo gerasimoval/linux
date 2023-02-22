@@ -1,0 +1,4 @@
+Перезаписать файл только строками без комментариев можно вот так:
+
+sudo  grep -v '^ *#\|^ *$' /etc/squid/squid.conf > ~/squid.conf
+sudo cp ~/squid.conf /etc/squid/squid.conf
