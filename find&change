@@ -1,0 +1,1 @@
+ grep -rl some_text . | xargs sed -i 's/'foo'/'bar'/g' *.yml
