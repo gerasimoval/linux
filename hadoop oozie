@@ -153,6 +153,20 @@ $ wget http://archive.cloudera.com/gplextras/misc/ext-2.2.zip
 3.2. Сборка Oozie
 Перед сборкой необходимо отредактировать репозитории, т.к проект мертвый адрес репозитория из исходников мертвый
 
+Добавить в файл ~/oozie-5.2.1/pom.xml в секцию <repositories>
+ <repository>
+    <id>pentaho-public</id>
+    <name>Pentaho Public</name>
+        <url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
+        <releases>
+            <enabled>true</enabled>
+            <updatePolicy>daily</updatePolicy>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>interval:15</updatePolicy>
+        </snapshots>
+</repository>
 
 $ cd oozie-5.2.1
 $ ./bin/mkdistro.sh -Dmaven.test.skip=true -P hadoop-3 -Dhadoop.version=3.3.6
