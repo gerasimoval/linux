@@ -1,42 +1,28 @@
-Prerequisites
-
-    Linux OS: I'm using Ubuntu 16.10 x64.
     Non-root user with sudo permission.
     Java JDK >=1.8 installed.
         $JAVA_HOME environment variable is set.
         Add $JAVA_HOME/bin to $PATH, make sure java and javac tools can be called on console.
-    Maven 3.0.1+.
-        Make sure mvn tool can be called on console.
-    Pig 0.7+.
-        Make sure pig tool can be called on console.
-    Packages:
-        wget, tar, unzip.
+ 
 
-Oozie runs on HDFS so we have to install Hadoop first.
-1. Install Hadoop standalone (single-node-cluster)
-1.1. Download Hadoop archive
+1. Установка hadoop (single-node-cluster)
+1.1. Скачивание hadoop архив
 
-Go to Hadoop release page and download the Hadoop archive binary. I'm using version 2.9.0.
-
-$ cd ~/Downloads   # Choose any places you wants
+$ cd ~/Downloads
 $ mkdir ozzie && cd oozie
-$ wget http://mirrors.viethosting.com/apache/hadoop/common/hadoop-2.9.0/hadoop-2.9.0.tar.gz
-$ tar -xzvf hadoop-2.9.0.tar.gz
-$ sudo mv hadoop-2.9.0 /usr/local/hadoop
+$ wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+$ tar -xzvf hadoop-3.3.6.tar.gz
+$ sudo mv hadoop-3.3.6 /usr/local/hadoop
 $ export PATH=$PATH:/usr/local/hadoop/bin
 $ which hadoop
 /usr/local/hadoop/bin/hadoop
 
-1.2. Configure Hadoop
-
-Configure the $JAVA_HOME env var for Hadoop in /usr/local/hadoop/etc/hadoop/hadoop-env.sh file.
-
-export JAVA_HOME=$(readlink -f $(which java) | sed "s:bin/java::").
+1.2. Настройка hadoop
+Указать $JAVA_HOME переменную окружения для Hadoop в /usr/local/hadoop/etc/hadoop/hadoop-env.sh file.
 
 $ sudo vi /usr/local/hadoop/etc/hadoop/hadoop-env.sh
 export JAVA_HOME=$(readlink -f $(which java) | sed "s:bin/java::")
 
-Also edit your ~/.bashrc file to add some Hadoop environment variables:
+Так же отредактировать ~/.bashrc файл:
 
 $ vi ~/.bashrc
 ...
@@ -53,45 +39,40 @@ export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 $ source ~/.bashrc
 $ hadoop version
-Hadoop 2.9.0
-Subversion https://git-wip-us.apache.org/repos/asf/hadoop.git -r 756ebc8394e473ac25feac05fa493f6d612e6c50
-Compiled by arsuresh on 2017-11-13T23:15Z
-Compiled with protoc 2.5.0
-From source with checksum 0a76a9a32a5257331741f8d5932f183
-This command was run using /usr/local/hadoop/share/hadoop/common/hadoop-common-2.9.0.jar
+Hadoop 3.3.6
+...
 
-You now successfully installed Hadoop in standalone mode.
-2. Configure HDFS to run on Hadoop standalone
-2.1. User
+Hadoop успешно установлен в standalone mode.
 
-We need a user with sudo permission to run Hadoop and Oozie, so create new user or using the current one as your choice.
+2. Настройка HDFS
+2.1. Создание пользователя
 
-Here I'm creating new lnquy user. From this to the end of this documentation, I'm assuming we're using lnquy user.
+Необходимо создать пользователя с sudo правами для запуска hadoop и oozie.
 
-# Create user and its group
-$ sudo addgroup lnquy
-$ sudo adduser –ingroup lnquy lnquy
-$ passwd lnquy
+# Создание пользоваеля и группы
+$ sudo groupadd testlab
+$ sudo useradd –ingroup testlab testlab
+$ passwd testlab
 
-# Add sudo permission
-$ sudo adduser lnquy sudo
+# Добавление sudo прав
+$ sudo adduser testlab sudo
 
-# Change HADOOP_HOME to lnquy onwer
-$ sudo chown -R lnquy:lnquy /usr/local/hadoop
+# Изменение владельца HADOOP_HOME на testlab
+$ sudo chown -R testlab:testlab /usr/local/hadoop
 
-# Gen SSH key
-$ su lnquy
+# Создание SSH ключа
+$ su testlab
 $ ssh-keygen -t rsa -P ""
 $ cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
-$ ssh localhost   # Test SSH
-$ exit   # Exit SSH, return to current lnquy user
+$ ssh localhost   # Проверка входа без пароля
+$ exit
 
-2.2. Configure namenode & datanode
+2.2. Настройка namenode & datanode
 
 $ sudo mkdir -p /app/hadoop/tmp
-$ sudo chown lnquy:lnquy /app/hadoop/tmp
+$ sudo chown testlab:testlab /app/hadoop/tmp
 
-# Configure HDFS dir and URI
+# Натройка HDFS каталога и URI
 $ sudo vi /usr/local/hadoop/etc/hadoop/core-site.xml
 <configuration>
   ...
@@ -106,7 +87,7 @@ $ sudo vi /usr/local/hadoop/etc/hadoop/core-site.xml
   ...
 </configuration>
 
-# Configure Haddop tracker
+# Настройка Haddop tracker
 $ cp /usr/local/hadoop/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
 $ sudo vi /usr/local/hadoop/etc/hadoop/mapred-site.xml
 <configuration>
@@ -118,12 +99,12 @@ $ sudo vi /usr/local/hadoop/etc/hadoop/mapred-site.xml
   ...
 </configuration>
 
-# Configure namenode and datanode dirs
+# Настройка namenode и datanode каталогов
 $ sudo mkdir -p /usr/local/hadoop_store/hdfs/namenode
 $ sudo mkdir -p /usr/local/hadoop_store/hdfs/datanode
-$ sudo chown -R lnquy:lnquy /usr/local/hadoop_store
+$ sudo chown -R testlab:testlab /usr/local/hadoop_store
 
-# Configure HDFS
+# Настройка HDFS
 $ sudo vi /usr/local/hadoop/etc/hadoop/hdfs-site.xml
 <configuration>
   ...
@@ -142,59 +123,62 @@ $ sudo vi /usr/local/hadoop/etc/hadoop/hdfs-site.xml
   ...
 </configuration>
 
-# Start HDFS
+# Старт HDFS
 $ cd /usr/local/hadoop_store/hdfs/namenode/
 $ hadoop namenode -format
 $ cd /usr/local/hadoop/sbin 
 $ ./start-all.sh
-$ jps   # Verify Hadoop cluster started
+$ jps   # Проверка старта Hadoop cluster
 
     Namonode: http://localhost:50070
     Datanode: http://localhost:50090
     Resource manager: http://localhost:8088
 
-3. Install Ozzie
+3. Установка Ozzie
 
-Note: Skip step 3.1 to 3.2 if you uses the Oozie archive I already built and shipped along with this documentation.
-3.1. Download Ozzie
+3.1. Установка maven
 
-Go to Apache Oozie page and choose the release version. I'm using version 4.3.1 here.
+# Для сборки Oozie необходимо установть maven
+$ dnf install maven
+
+3.2. Скачивание Ozzie
 
 $ cd ~/Downloads/ozzie
-$ wget http://mirror.downloadvn.com/apache/oozie/4.3.1/oozie-4.3.1.tar.gz
-$ tar-xzvf oozie-4.3.1.tar.gz
+$ wget http://mirror.downloadvn.com/apache/oozie/5.2.1/oozie-5.2.1.tar.gz
+$ tar-xzvf oozie-5.2.1.tar.gz
 
-# Download Ozzie extension - required for webconsole
+# Скачивание Ozzie расширения необходимого для web консоли
 $ wget http://archive.cloudera.com/gplextras/misc/ext-2.2.zip
 
-3.2. Build Oozie
+3.2. Сборка Oozie
+Перед сборкой необходимо отредактировать репозитории, т.к проект мертвый адрес репозитория из исходников мертвый
 
-$ cd oozie-4.3.1
-$ ./bin/mkdistro.sh -DskipTests -P hadoop-2 -Dhadoop.version=2.9.0
 
-If all builds success then the Oozie distribution file will be placed at distro/target/oozie-4.3.1-distro.tar.gz.
+$ cd oozie-5.2.1
+$ ./bin/mkdistro.sh -Dmaven.test.skip=true -P hadoop-3 -Dhadoop.version=3.3.6
+
+После завршения сборки, архив появится в distro/target/oozie-5.2.1-distro.tar.gz.
 
 $ mkdir ../oozie-dist
-$ tar -xzvf distro/target/oozie-4.3.1-distro.tar.gz -C ../oozie-dist
-$ cd ../oozie-dist/oozie-4.3.1
+$ tar -xzvf distro/target/oozie-5.2.1-distro.tar.gz -C ../oozie-dist
+$ cd ../oozie-dist/oozie-5.2.1
 
-3.3. Add libraries to Oozie's libext
+3.3. Добалвение библиотек Oozie libext
 
-Create new libext folder at oozie-dist/oozie-4.3.1/libext and extract ExtJS (downloaded at step 3.1). to libext.
+Создать libext каталог в oozie-dist/oozie-5.2.1/ и распаковать Ext (скачанный в пнкте 3.1).
 
 $ mkdir libext
 $ mv ../../ext-2.2.zip libext/
 
-# Also copy some Hadoop jars from Hadoop's share dir to libext.
-# For simpler, you just have to extract the Oozie archive shipped along with this documentation then copy the libext to your Oozie dir.
+# Так же необходимо скопировать hadoop jar'ы из hadoop шары в libext.
 
-3.5. Start Oozie daemon
+3.5. Старт Oozie демона
 
-# Upload Oozie sharelib to HDFS
+# Загрузить Oozie sharelib на HDFS
 $ ./bin/oozie-setup.sh sharelib create -fs hdfs://localhost:54310
-# Init Oozie database
+# Инициализация Oozie бд
 $ ./bin/ooziedb.sh create -sqlfile oozie.sql -run
-# Start daemon
+# Старт демона
 $ ./bin/oozied.sh start
 
-You should see the Oozie web console on http://localhost:11000/oozie/.
+Web консоль Oozie должна быть доступна по адресу http://localhost:11000/oozie/
