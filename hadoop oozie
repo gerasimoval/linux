@@ -1,9 +1,3 @@
-    Non-root user with sudo permission.
-    Java JDK >=1.8 installed.
-        $JAVA_HOME environment variable is set.
-        Add $JAVA_HOME/bin to $PATH, make sure java and javac tools can be called on console.
- 
-
 1. Установка hadoop (single-node-cluster)
 1.1. Скачивание hadoop архив
 
@@ -182,7 +176,7 @@ $ cd ../oozie-dist/oozie-5.2.1
 Создать libext каталог в oozie-dist/oozie-5.2.1/ и распаковать Ext (скачанный в пнкте 3.1).
 
 $ mkdir libext
-$ mv ../../ext-2.2.zip libext/
+$ mv ~/Downloads/ozzie/ext-2.2.zip libext/
 
 # Так же необходимо скопировать hadoop jar'ы из hadoop шары в libext.
 
