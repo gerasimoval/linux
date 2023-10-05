@@ -129,7 +129,6 @@ $ jps   # Проверка старта Hadoop cluster
     Resource manager: http://localhost:8088
 
 3. Установка Ozzie
-
 3.1. Установка maven
 
 # Для сборки Oozie необходимо установть maven
@@ -139,7 +138,7 @@ $ dnf install maven
 
 $ cd ~/Downloads/ozzie
 $ wget http://mirror.downloadvn.com/apache/oozie/5.2.1/oozie-5.2.1.tar.gz
-$ tar-xzvf oozie-5.2.1.tar.gz
+$ tar -xzvf oozie-5.2.1.tar.gz
 
 # Скачивание Ozzie расширения необходимого для web консоли
 $ wget http://archive.cloudera.com/gplextras/misc/ext-2.2.zip
@@ -148,21 +147,25 @@ $ wget http://archive.cloudera.com/gplextras/misc/ext-2.2.zip
 Перед сборкой необходимо отредактировать репозитории, т.к проект мертвый адрес репозитория из исходников мертвый
 
 Добавить в файл ~/oozie-5.2.1/pom.xml в секцию <repositories>
- <repository>
-    <id>pentaho-public</id>
-    <name>Pentaho Public</name>
-        <url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
-        <releases>
-            <enabled>true</enabled>
-            <updatePolicy>daily</updatePolicy>
-        </releases>
-        <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>interval:15</updatePolicy>
-        </snapshots>
-</repository>
+<repositories>
+...
+  <repository>
+      <id>pentaho-public</id>
+      <name>Pentaho Public</name>
+          <url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
+          <releases>
+              <enabled>true</enabled>
+              <updatePolicy>daily</updatePolicy>
+          </releases>
+          <snapshots>
+              <enabled>true</enabled>
+              <updatePolicy>interval:15</updatePolicy>
+          </snapshots>
+  </repository>
+...
+<repositories>
 
-$ cd oozie-5.2.1
+$ cd ~/oozie-5.2.1
 $ ./bin/mkdistro.sh -Dmaven.test.skip=true -P hadoop-3 -Dhadoop.version=3.3.6
 
 После завршения сборки, архив появится в distro/target/oozie-5.2.1-distro.tar.gz.
